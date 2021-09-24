@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>3장 쿵쿵타</title>
+    </head>
+    <body>
+        <div><span id="order">1</span>번째 참가자</div>
+        <div>제시어 : <span id="word"></span></div>
+        <input type="text">
+        <button>입력</button>
+        <script>
+            // 사용자로부터 값을 받는다.
+            const number = Number(prompt('몇 명이 참가하나요?')); // 참가자 수
+            
+            // prompt 함수에서 취소를 누르면 null이 반환된다.
+            // 이것이 Number 함수에 들어가면 NaN이 된다.
+            // NaN은 if문에서 false를 의미
+            if(number){
+                const $button = document.querySelector('button');
+                const $input = document.querySelector('input');
+                const $word = document.querySelector('#word');
+                const $order = document.querySelector('#order');
+
+                let word; // 제시어가 저장할 변수
+                let newWord; // 입력할 단어를 저장할 변수
+
+                // 버튼 클릭
+                const onClickButton = () => {
+                    // 입력한 글자가 세 글자인지
+                    if(!word || word[word.length - 1] === newWord[0]){
+                        if(newWord.length === 3){
+                            word = newWord;
+                            $word.textContent = word;
+
+                            const order = parseInt($order.textContent);
+                            if(order + 1 > number){
+                                $order.textContent = 1;
+                            } else {
+                                $order.textContent = order + 1;
+                            }
+                        } else {
+                            alert('다시 입력하세요.');
+                        }
+                    } else { // 제시어가 비어있지 않은 경우
+                        alert('올바르지 않은 단어입니다.');
+                    }
+                    $input.value = ''; // 입력창 비움
+                    $input.focus(); // 커서를 둠
+                };
+
+                const onInput = (event) => {
+                    newWord = event.target.value;
+                }; // 입력한 단어가 변수 newWord에 저장
+
+                $button.addEventListener('click', onClickButton);
+                $input.addEventListener('input', onInput);
+            }
+        </script>
+    </body>
+</html>
