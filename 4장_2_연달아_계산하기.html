@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>4장 계산기</title>
+        <title>4장 연달아 계산하기</title>
         <style>
             * {box-sizing: border-box;}
             #result {width: 180px; height: 50px; margin: 5px; text-align: right;}
@@ -77,10 +77,34 @@
 
             const onClickOperator = (op) => () => { // 함수를 리턴하는 함수 -> 고차함수
                 // return undefined 가 아닌, 함수를 리턴하도록 함
-                if(numOne){ // numOne가 비어있지 않은
+                if(numTwo){
+                    switch(operator){
+                        // numOne과 numTwo는 문자열이므로, +에서 parseInt 해야한다.
+                        // 그러나 -, *, / 에서는 문자열이 숫자로 바뀌기 때문에 X
+                        case '+':
+                            $result.value = parseInt(numOne) + parseInt(numTwo);
+                            break;
+                        case '-':
+                            $result.value = numOne - numTwo;
+                            break;
+                        case 'x':
+                            $result.value = numOne * numTwo;
+                            break;
+                        case '/':
+                            $result.value = numOne / numTwo;
+                            break;
+                        default:
+                            break;
+                    }
+                    numOne = $result.value;
+                    operator = '';
+                    $operator.value = '';
+                }
+                else if(numOne){ // numOne가 비어있지 않은
                     operator = op;
                     $operator.value = op;
-                } else { // numOne가 비어있는
+                }
+                else { // numOne가 비어있는
                     alert('숫자를 먼저 입력하세요.');
                 }
             };
@@ -110,6 +134,10 @@
                         default:
                             break;
                     }
+                    numOne = $result.value;
+                    operator = '';
+                    numTwo = '';
+                    $operator.value = '';
                 }
                 else {
                     alert('숫자를 먼저 입력하세요.');
