@@ -14,7 +14,7 @@
         <!--계산기 버튼 구성-->
         <!--readonly : 사용자들이 글자를 작성할 수 없게 함. 자바스크립트로는 글자를 작성할 수 있음.-->
         <input readonly id="operator">
-        <input readonly type="number" id="result">
+        <input readonly type="onlyNumber" id="result">
         <div class="row">
             <button id="num-7">7</button>
             <button id="num-8">8</button>
@@ -40,23 +40,34 @@
             <button id="multiply">x</button>
         </div>
         <script>
+            // 4장_1에서 추가한 것
+            // 1 + 2 = 3, 3 + 4 = 7,,, 연달아 계산하는 기능
+            // 처음에 음수 입력하는 기능
+            // 1 + 2 + 3 + 4,,, 연달아 계산하는 기능
+
             let numOne = '';
             let operator = '';
             let numTwo = '';
             
+            let neg = ''; // 음수 입력할 때 사용할 변수
+
             // 태그 선택
             const $operator = document.querySelector('#operator');
             const $result = document.querySelector('#result');
 
             // 고차함수 대신 event 객체로 중복 제거
             const onClickNumber = (event) => {
+                if(neg) { // 음수를 입력할 경우
+                    numOne -= event.target.textContent;
+                    neg = '';
+                    $result.value += event.target.textContent;
+                    return;
+                }
                 if(!operator){ // operator가 비어있을 때
                     numOne += event.target.textContent;
                     $result.value += event.target.textContent;
                     return;
                 }
-                // return 뒤에는 else가 필요 없다. (if문 중첩 제거)
-                // operator가 비어있지 않을 때
                 if(!numTwo){
                     $result.value = '';
                 }
@@ -79,8 +90,6 @@
                 // return undefined 가 아닌, 함수를 리턴하도록 함
                 if(numTwo){
                     switch(operator){
-                        // numOne과 numTwo는 문자열이므로, +에서 parseInt 해야한다.
-                        // 그러나 -, *, / 에서는 문자열이 숫자로 바뀌기 때문에 X
                         case '+':
                             $result.value = parseInt(numOne) + parseInt(numTwo);
                             break;
@@ -97,14 +106,17 @@
                             break;
                     }
                     numOne = $result.value;
-                    operator = '';
-                    $operator.value = '';
+                    numTwo = '';
                 }
                 else if(numOne){ // numOne가 비어있지 않은
                     operator = op;
                     $operator.value = op;
                 }
-                else { // numOne가 비어있는
+                else if(op === '-'){
+                    neg = '-';
+                    $result.value = '-';
+                }
+                else{ // numOne가 비어있는
                     alert('숫자를 먼저 입력하세요.');
                 }
             };
@@ -117,8 +129,6 @@
             document.querySelector('#calculate').addEventListener('click', () => {
                 if(numTwo){
                     switch(operator){
-                        // numOne과 numTwo는 문자열이므로, +에서 parseInt 해야한다.
-                        // 그러나 -, *, / 에서는 문자열이 숫자로 바뀌기 때문에 X
                         case '+':
                             $result.value = parseInt(numOne) + parseInt(numTwo);
                             break;
