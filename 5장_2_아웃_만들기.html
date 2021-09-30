@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>5장 숫자야구</title>
+        <title>5장 아웃 만들기</title>
     </head>
     <body>
         <form id="form">
@@ -47,6 +47,13 @@
                 // 즉, 검증 실패한 경우, undefined를 리턴
             }
 
+            function defeated() {
+                $logs.appendChild(document.createTextNode(`패배! 정답은 ${answer.join('')}`));
+                // createTextNode : 텍스트를 만드는 메서드
+                // appendChild : 문자열을 createTextNode로 만들어줘야함. 여러 개를 넣을 수 없음.
+            }
+
+            let outCount = 0;
             $form.addEventListener('submit', (evnet)=>{
                 // form 안의 button을 누르면 submit이 호출됨
                 // form의 기본동작은 새로고침
@@ -66,16 +73,14 @@
                     return;
                 }
                 if(tries.length >= 9){ // 시도 10번
-                    $logs.appendChild(document.createTextNode(`패배! 정답은 ${answer.join('')}`));
-                    // createTextNode : 텍스트를 만드는 메서드
-                    // appendChild : 문자열을 createTextNode로 만들어줘야함. 여러 개를 넣을 수 없음.
+                    defeated()
                     return;
                 }
                 // 몇 스트라이크 몇 볼인지 검사
                 let strike = 0;
                 let ball = 0;
-                answer.forEach((number, i) => {
-                    const index = value.indexOf(String(number));
+                for(let i = 0; i < answer.length; i++){
+                    const index = value.indexOf(answer[i]);
                     // indexOf : 값의 위치를 반환
                     if(index > -1) { // 일치하는 숫자 발견
                         if(index === i){ // 자릿수도 같음
@@ -84,10 +89,20 @@
                             ball++;
                         }
                     }
-                })
-                $logs.append(`${value}: ${strike} 스트라이크 ${ball} 볼`, document.createElement('br'));
-                // createElement : 태그를 만드는 메서드
-                // append : createTextNode 없이 문자열을 바로 넣을 수 있음. 여러 개를 넣을 수 있음.
+                }
+                if(strike === 0 && ball === 0) {
+                    outCount++;
+                    $logs.append(`${value}: ${outCount} 아웃`, document.createElement('br'));
+                    if(outCount === 3) {
+                        defeated();
+                        return;
+                    }
+                }
+                else{
+                    $logs.append(`${value}: ${strike} 스트라이크 ${ball} 볼`, document.createElement('br'));
+                    // createElement : 태그를 만드는 메서드
+                    // append : createTextNode 없이 문자열을 바로 넣을 수 있음. 여러 개를 넣을 수 있음.
+                }
                 tries.push(value); // 시도한 값을 기록 + 몇번 시도했는지 카운트
             });
         </script>
