@@ -19,5 +19,50 @@
 <body>
     <div id="result">추첨 결과는? </div>
     <div id="bonus">보너스: </div>
-    <script></script>
+    <script>
+        // 빈 배열을 45개 만들고, undefined로 채움
+        // map을 통해 index+1을 넣는 코드 (1~45까지 넣는 코드)
+        const candidate = Array(45).fill().map((v, i) => i + 1); // 45개의 공을 뽑아놓음
+
+        // 배열 45개를 랜덤으로 섞고 앞에서 7개를 뽑는 방식
+        // 전부를 랜덤으로 섞어서, 랜덤으로 섞인 배열 하나를 만들어내는 것 -> 피셔 예이츠 셔플
+        const shuffle = []; // 공 45개를 섞어넣는 배열
+        while(candidate.length > 0){
+            const random = Math.floor(Math.random() * candidate.length); // 무작위 인덱스 뽑기
+            const spliceArray = candidate.splice(random, 1); // 뽑은 값은 배열에 들어있음
+            // splice의 리턴값은 배열
+            const value = spliceArray[0]; // 배열에 들어있는 값을 꺼내서
+            shuffle.push(value); // shuffle 배열에 넣기
+        } 
+
+        // 앞에서 6개를 자르고, 이를 정렬
+        const winBalls = shuffle.slice(0, 6).sort((a, b) => a - b);
+        // slice : 원본을 바꾸지 않음, 두번째 매개변수가 인덱스를 의미, 추가를 못함
+        // splice : 원본을 바꿈, 두번째 매개변수가 길이를 의미
+        // sort : 리턴값에 따라 어떻게 정렬할지 결정, 원본을 바꿈
+        // 배열.slice() : 원본이 그대로 잘려나옴, 원본과 동일X
+        // 배열.slice().sort() : 원본이 수정되지 않으면서 새로 정렬할 수 있음
+        const bonus = shuffle[6];
+        console.log(winBalls, bonus);
+
+        const $result = document.querySelector('#result');
+        const $bonus = document.querySelector('#bonus');
+        
+        const showBall = (number, $target) => {
+            const $ball = document.createElement('div'); // div 태그를 만듦
+            $ball.className = 'ball'; // 태그의 클래스 이름 지정 
+            $ball.textContent = number;
+            $target.appendChild($ball);
+        };
+
+        for(let i = 0; i < 6; i++){
+            setTimeout(() => {
+                showBall(winBalls[i], $result);
+            }, (i+1)*1000);
+        }
+
+        setTimeout(() => {
+            showBall(bonus, $bonus);
+        }, 7000);
+    </script>
 </body>
