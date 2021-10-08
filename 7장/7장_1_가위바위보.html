@@ -29,29 +29,82 @@
             $computer.style.backgroundSize = 'auto 200px'; // 이미지의 가로 너비와 세로 너비
             // auto : 비율을 유지하면서 사이즈가 정해짐
 
-            const rspX = {
+            const rspX = { // 가위바위보의 x 좌표
                 scissors : '0', // 가위
                 rock : '-220px', // 바위
                 papaer : '-440px', // 보
             };
 
-            let computerChoice = rspX.scissors;
-            setInterval(() => {
-                if(computerChoice === rspX.scissors) { // 가위
-                    computerChoice = rspX.rock;
-                    $computer.style.background = `url(${IMG_URL}) ${rspX.rock} 0`; // 바위로 바꾼다
-                    $computer.style.backgroundSize = 'auto 200px';
-                    // background 를 변경할 때는 backgroundSize도 한번 더 선언해야 문제X
-                } else if(computerChoice === rspX.rock) { // 바위
-                    computerChoice = rspX.papaer;
-                    $computer.style.background = `url(${IMG_URL}) ${rspX.papaer} 0`; // 보로 바꾼다
-                    $computer.style.backgroundSize = 'auto 200px';
-                } else if(computerChoice === rspX.papaer) { // 보
-                    computerChoice = rspX.scissors;
-                    $computer.style.background = `url(${IMG_URL}) ${rspX.scissors} 0`; // 가위로 바꾼다
-                    $computer.style.backgroundSize = 'auto 200px';
+            let computerChoice = 'scissors';
+            const changeComputerHand = () => {
+                if(computerChoice === 'scissors') { // 가위
+                    computerChoice = 'rock'; // 바위로 바꾼다
+                } else if(computerChoice === 'rock') { // 바위
+                    computerChoice = 'papaer'; // 보로 바꾼다
+                } else if(computerChoice === 'papaer') { // 보
+                    computerChoice = 'scissors';  // 가위로 바꾼다
                 }
-            },50);
+                $computer.style.background = `url(${IMG_URL}) ${rspX[computerChoice]} 0`;
+                $computer.style.backgroundSize = 'auto 200px';
+                // background 를 변경할 때는 backgroundSize도 한번 더 작성해야 문제X
+                // 작성하지 않으면 backgroundSize가 리셋됨
+            };
+            let intervalId = setInterval(changeComputerHand, 50);
+
+            const scoreTable = {
+                rock : 0,
+                scissors : 1,
+                paper : -1,
+            };
+
+            let clickable = true;
+            let score = 0; // 점수
+            const clickButton = () => {
+                if(clickable){
+                    clearInterval(intervalId); // 가위바위버 버튼을 누르면 타이머 멈춤
+                    clickable = false;
+
+                    // 점수 계산 및 화면 표시
+                    const myChoice = event.target.textContent === '바위'
+                        ? 'rock'
+                        : event.target.textContent === '가위'
+                            ? 'scissors'
+                            : 'paper';
+                    const myScore = scoreTable[myChoice];
+                    const computerScore = scoreTable[computerChoice];
+                    const diff = myScore - computerScore;
+
+                    // diff === '고양이' || diff === '사자' || diff === '강아지' || diff === '거북이'
+                    // 위 코드를 아래와 같이 줄일 수 있다
+                    // ['고양이', '사자', '강아지', '거북이'].includes(diff)
+
+                    // 2, -1은 승리 조건, -2, 1은 패배 조건
+                    let message = '';
+                    if([2, -1].includes(diff)){ // 가위바위보 규칙
+                        score += 1;
+                        message = '승리';
+                    } else if ([-2, 1].includes(diff)) {
+                        score -= 1;
+                        message = '패배';
+                    } else {
+                        message = '무승부';
+                    }
+                    $score.textContent = `${message} 총 : ${score}점`;
+                    
+                    setTimeout(() => {
+                        clickable = true;
+                        // 버튼을 연속으로 클릭하면 이미지가 빨라지고 멈추지 않는 문제
+                        // setTimeout이 비동기이기 때문에, 만일 5번 연속으로 클릭하면
+                        // intervalId에 5번째 intervalId만 들어가게됨
+                        clearInterval(intervalId); // 위 문제를 해결하기 위함 (1초 후에 직전 intervalId를 제거)
+                        intervalId = setInterval(changeComputerHand, 50);
+                    }, 1000);
+                }
+            };
+
+            $rock.addEventListener('click', clickButton);
+            $scissors.addEventListener('click', clickButton);
+            $paper.addEventListener('click', clickButton);
         </script>
     </body>
 </html>
