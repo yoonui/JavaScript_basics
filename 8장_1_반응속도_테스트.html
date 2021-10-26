@@ -29,12 +29,18 @@
             const $screen = document.querySelector('#screen');
             const $result = document.querySelector('#result');
 
+            let startTime;
+            let endTime;
+            const records = [];
             $screen.addEventListener('click', (event) => {
                 if(event.target.classList.contains('waiting')){ // class에 'waiting'이 들어있는지 (파랑)
-                    $screen.classList.remove('waiting');
-                    $screen.classList.add('ready');
+                    $screen.classList.remove('waiting'); // 클래스 제거
+                    $screen.classList.add('ready'); // 클래스 추가
                     $screen.textContent = '초록색이 되면 클릭하세요';
-                    setTimeout(function() {
+                    setTimeout(function() { // 초록색 화면으로 바꿈
+                        // 첫 시간 재기
+                        startTime = new Date();
+
                         $screen.classList.remove('ready');
                         $screen.classList.add('now');
                         $screen.textContent = '클릭하세요!';
@@ -42,7 +48,18 @@
                 }else if(event.target.classList.contains('ready')){ // 준비 화면 (빨강)
                     
                 } else if(event.target.classList.contains('now')){ // 클릭 화면 (초록)
-                    
+                    // 끝 시간 재기
+                    endTime = new Date();
+
+                    // 시간 차이 저장하기
+                    const current = endTime - startTime;
+                    records.push(current); // 시간 차이를 배열에 기록
+                    const average = records.reduce((a, c) => a + c) / records.length;
+                    $result.textContent = `현재: ${current}ms, 평균: ${average}ms`;
+
+                    $screen.classList.remove('now'); // 클래스 제거
+                    $screen.classList.add('waiting'); // 클래스 추가
+                    $screen.textContent = '클릭해서 시작하세요';
                 }
             });
         </script>
