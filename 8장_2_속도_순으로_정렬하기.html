@@ -24,7 +24,7 @@
     </head>
     <body>
         <div id="screen" class="waiting">클릭해서 시작하세요</div>
-        <div id="result"></div> <!--평균 반응 속도 보여줌-->
+        <div id="result"></div>
         <script>
             const $screen = document.querySelector('#screen');
             const $result = document.querySelector('#result');
@@ -34,39 +34,41 @@
             let timeoutId;
             const records = [];
             $screen.addEventListener('click', (event) => {
-                if(event.target.classList.contains('waiting')){ // class에 'waiting'이 들어있는지 (파랑)
-                    $screen.classList.remove('waiting'); // 클래스 제거
-                    $screen.classList.add('ready'); // 클래스 추가
+                if(event.target.classList.contains('waiting')){
+                    $screen.classList.remove('waiting');
+                    $screen.classList.add('ready');
                     $screen.textContent = '초록색이 되면 클릭하세요';
-                    timeoutId = setTimeout(function() { // 초록색 화면으로 바꿈
-                        // 첫 시간 재기
+                    timeoutId = setTimeout(function() {
                         startTime = new Date();
 
                         $screen.classList.remove('ready');
                         $screen.classList.add('now');
                         $screen.textContent = '클릭하세요!';
-                    }, Math.floor(Math.random() * 1000) + 2000); // 2000~3000 사이 수 
-                }else if(event.target.classList.contains('ready')){ // 준비 화면 (빨강)
-                    // 성급한 클릭 막기
+                    }, Math.floor(Math.random() * 1000) + 2000);
+                }else if(event.target.classList.contains('ready')){
                     clearTimeout(timeoutId);
                     $screen.classList.remove('ready');
                     $screen.classList.add('waiting');
                     $screen.textContent = '너무 성급하시군요!';
-                } else if(event.target.classList.contains('now')){ // 클릭 화면 (초록)
-                    // 끝 시간 재기
+                } else if(event.target.classList.contains('now')){
                     endTime = new Date();
 
-                    // 시간 차이 저장하기
                     const current = endTime - startTime;
-                    records.push(current); // 시간 차이를 배열에 기록
-                    const average = records.reduce((a, c) => a + c) / records.length;
-                    // 배열.reduce((누적값, 현잿값) => {
-                    //      return 새로운누적값;
-                    // }, 초깃값);
-                    $result.textContent = `현재: ${current}ms, 평균: ${average}ms`;
+                    records.push(current);
 
-                    $screen.classList.remove('now'); // 클래스 제거
-                    $screen.classList.add('waiting'); // 클래스 추가
+                    const average = records.reduce((a, c) => a + c) / records.length;
+                    $result.textContent = `현재: ${current}ms, 평균: ${average}ms`;
+                    
+                    const topFive = records.sort((a, b) => a - b).slice(0, 5);
+                    topFive.forEach((top, index) => {
+                        $result.append(
+                            document.createElement('br'),
+                            `${index + 1}위: ${top}ms`,
+                        );
+                    });
+
+                    $screen.classList.remove('now');
+                    $screen.classList.add('waiting');
                     $screen.textContent = '클릭해서 시작하세요';
                 }
             });
