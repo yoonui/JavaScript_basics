@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>9장 틱택토</title>
+        <title>9장 컴퓨터의 턴 만들기</title>
         <style>
             table {
                 border-collapse: collapse;
@@ -18,8 +18,6 @@
     </head>
     <body>
         <script>
-            // 구조분해 할당
-            // 배열이나 객체의 속성을 해체하여 그 값을 개별 변수에 담을 수 있다.
             const { body } = document;
 
             const $table = document.createElement('table');
@@ -27,16 +25,12 @@
             const rows = [];
             let turn = 'O';
 
-            const checkWinner = (target) => { // target -> td 태그
-                // 칸을 클릭했을 때, 몇번째 줄 몇번째 칸인지
-                const rowIndex = target.parentNode.rowIndex; // tr의 rowIndex
-                const cellIndex = target.cellIndex; // td의 cellIndex
-                // parentNode : 태그의 부모 태그를 가져옴
+            const checkWinner = (target) => {
+                const rowIndex = target.parentNode.rowIndex;
+                const cellIndex = target.cellIndex;
 
-                // 세 칸 다 채워졌는지
                 let hasWinner = false;
 
-                // 가로줄 검사
                 if (
                     rows[rowIndex][0].textContent === turn &&
                     rows[rowIndex][1].textContent === turn &&
@@ -45,7 +39,6 @@
                     hasWinner = true;
                 }
 
-                // 세로줄 검사
                 if (
                     rows[0][cellIndex].textContent === turn &&
                     rows[1][cellIndex].textContent === turn &&
@@ -54,7 +47,6 @@
                     hasWinner = true;
                 }
 
-                // 대각선 검사
                 if (
                     rows[0][0].textContent === turn &&
                     rows[1][1].textContent === turn &&
@@ -73,29 +65,36 @@
                 return hasWinner;
             }
 
-            const callback = (event) => {
-                // 칸에 글자가 있는지
-                if(event.target.textContent) return;
-                event.target.textContent = turn;
-
-                const hasWinner = checkWinner(event.target);
-                //승부 판단하기
+            const checkWinnerAndDraw = (target) => {
+                const hasWinner = checkWinner(target);
                 if(hasWinner){
-                    // 승자가 있으면
                     $result.textContent = `${turn}님이 승리!`;
                     $table.removeEventListener('click', callback);
                     return;
                 }
                 
-                // 승자가 없으면
                 const draw = rows.flat().every((cell) => cell.textContent);
-                // flat : 2차원 배열을 1차원으로 만들어준다.
-                // every : 조건을 만족하지 않는 요소를 하나라도 찾으면 반복을 중단
                 if(draw){
                     $result.textContent = '무승부';
                     return;
                 }
                 turn = (turn === 'X' ? 'O' : 'X');
+            };
+
+            const callback = (event) => {
+                if(event.target.textContent) return;
+                event.target.textContent = turn;
+                checkWinnerAndDraw(event.target);
+
+                // 컴퓨터의 턴
+                if(turn === 'X') {
+                    const emptyCells = rows.flat().filter((v) => !v.textContent); // 빈칸을 찾음
+                    // filter : 조건에 해당하는 값을 걸러줌
+                    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    // ㄴ 빈칸에서 랜덤하게 하나 고름
+                    randomCell.textContent = 'X';
+                    checkWinnerAndDraw(randomCell);
+                }
             };
             
             for(let i = 1; i <= 3; i++){
