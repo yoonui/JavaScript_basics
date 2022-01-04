@@ -56,8 +56,7 @@
             const $monsterAtt = document.querySelector('#monster-att');
             const $message = document.querySelector('#message');
 
-            // 클래스(class) : 객체를 생성하기 위한 템플릿(서식)
-            class Game { // 게임을 총괄하는 클래스 -> 초기값과 게임 관련 함수를 묶어줌
+            class Game {
                 constructor(name){
                     this.monster = null;
                     this.hero = null;
@@ -66,24 +65,16 @@
                         { name: '스켈레톤', hp: 50, att: 15, xp: 20 },
                         { name: '마왕', hp: 150, att: 35, xp: 50 },
                     ];
-                    this.start(name); // 게임 시작
+                    this.start(name);
                 }
-                start(name){ // this.start()가 가리키는 함수
-                    // start 내부의 this는 Game 객체
+                start(name){
                     $gameMenu.addEventListener('submit', this.onGameMenuInput);
-                    // addEventListener에서 function을 사용하는 경우, this는 $gameMenu를 가리킴
-                    // 즉, start 내부의 this와 addEventListener에서 사용하는 function 내부의 this는 다름
-                    
-                    // 바깥쪽 this와 안쪽 this를 같게 만드는 방법 -> 화살표 함수
-                    // 화살표 함수를 사용하면 this가 화살표 함수 바깥쪽 this에 해당
-                    // function을 사용하면 자기만의 this를 가짐
-                    // -> 화살표 함수와 function의 this가 다르다.
                     $battleMenu.addEventListener('submit', this.onBattleMenuInput);
                     this.changeScreen('game');
                     this.hero = new Hero(this, name);
                     this.updateHeroStat();
                 }
-                changeScreen(screen) { // 게임 화면 전환
+                changeScreen(screen) {
                     if(screen === 'start'){
                         $startScreen.style.display = 'block';
                         $gameMenu.style.display = 'none';
@@ -101,7 +92,7 @@
                 onGameMenuInput = (event) => {
                     event.preventDefault();
                     const input = event.target['menu-input'].value;
-                    if(input === '1'){ // input의 값은 텍스트
+                    if(input === '1'){
                         // 모험
                         this.changeScreen('battle');
                         const randomIndex = Math.floor(Math.random() * this.monsterList.length);
@@ -117,7 +108,10 @@
                         this.showMessage(`몬스터와 마주쳤다. ${this.monster.name}인 것 같다!`);
                     } else if (input === '2'){
                         // 휴식
-
+                        // 주인공 체력을 최대로 회복
+                        this.hero.hp = this.hero.maxHp;
+                        this.updateHeroStat();
+                        this.showMessage('충분한 휴식을 취했다.');
                     } else if (input === '3'){
                         // 종료
                         this.quit();
@@ -130,26 +124,39 @@
                         const { hero, monster } = this;
                         hero.attck(monster);
                         monster.attck(hero);
-                        if (hero.hp <= 0){ // 영웅이 죽음
+                        if (hero.hp <= 0){
                             this.showMessage(`${hero.lev} 레벨에서 전사. 새 주인공을 생성하세요.`);
-                            this.quit(); // 게임 종료
-                        } else if(monster.hp <= 0){ // 몬스터가 죽음
+                            this.quit();
+                        } else if(monster.hp <= 0){
                             this.showMessage(`몬스터를 잡아 ${monster.xp} 경험치를 얻었다.`);
                             hero.getXp(monster.xp);
                             this.monster = null;
                             this.changeScreen('game');
-                        } else{ // 전투 진행 중
+                        } else {
                             this.showMessage(`${hero.att}의 데미지를 주고, ${monster.att}의 데미지를 받았다.`);
                         }
                         this.updateHeroStat();
                         this.updateMonsterStat();
                     } else if (input === '2'){ // 회복
-
+                        // 전투 중에 체력 20 회복
+                        const { hero, monster } = this;
+                        if(hero.hp + 20 >= hero.maxHp){
+                            hero.hp = hero.maxHp;
+                        } else {
+                            hero.hp += 20;
+                        }
+                        // hero.hp = Math.min(hero.maxHp, hero.hp + 20);
+                        monster.attck(hero);
+                        this.showMessage(`20의 체력을 회복하고, ${monster.att}의 데미지를 받았다.`);
+                        this.updateHeroStat();
                     } else if (input === '3'){ // 도망
+                        this.showMessage('몬스터로부터 도망쳤다.');
+                        this.monster = null;
                         this.changeScreen('game');
+                        this.updateMonsterStat();
                     }
                 }
-                updateHeroStat() { // 영웅의 상태가 바뀔 때마다 화면변경
+                updateHeroStat() {
                     const { hero } = this;
                     if(hero === null){
                         $heroName.textContent = '';
@@ -190,9 +197,9 @@
                     this.changeScreen('start');
                     game = null;
                 }
-            } // 객체 생성 시 new를 작성하지 않으면, 에러 발생
+            }
             
-            class Unit { // 공통 클래스
+            class Unit {
                 constructor(game, name, hp, att, xp){
                     this.game = game;
                     this.name = name;
@@ -208,12 +215,8 @@
 
             class Hero extends Unit {
                 constructor(game, name){
-                    super(game, name, 100, 10, 0); // 부모 클래스의 생성자를 호출
+                    super(game, name, 100, 10, 0);
                     this.lev = 1;
-                }
-                attck(target) {
-                    super.attck(target); // 부모 클래스의 attck
-                    // super를 통해 부모 메서드에 접근
                 }
                 heal(monster){
                     this.hp += 20;
@@ -221,7 +224,7 @@
                 }
                 getXp(xp){
                     this.xp += xp;
-                    if(this.xp >= this.lev * 15){ // 경험치를 다 채우면
+                    if(this.xp >= this.lev * 15){
                         this.xp -= this.lev * 15;
                         this.lev += 1;
                         this.maxHp += 5;
@@ -242,8 +245,7 @@
             $startScreen.addEventListener('submit', (event) => {
                 event.preventDefault();
                 const name = event.target['name-input'].value;
-                game = new Game(name); // 게임을 새로 생성
-                // new Game을 실행하면, Game의 constructor가 실행
+                game = new Game(name);
             });
         </script>
     </body>
