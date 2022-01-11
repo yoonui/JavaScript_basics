@@ -1,0 +1,88 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>2048</title>
+        <style>
+            #table { border-collapse: collapse; user-select: none; }
+            #table td {
+                border: 10px solid #bbada0; width: 116px; height: 128px;
+                font-size: 50px; font-weight: bold; text-align: center;
+            }
+            #score { user-select: none; }
+            .color-2 { background-color: #eee4da; color: #776e65; }
+            .color-4 { background-color: #eee1c9; color: #776e65; }
+            .color-8 { background-color: #f3b27a; color: white; }
+            .color-16 { background-color: #f69664; color: white; }
+            .color-32 { background-color: #f77c5f; color: white; }
+            .color-64 { background-color: #f75f3b; color: white; }
+            .color-128 { background-color: #edd073; color: #776e65; }
+            .color-256 { background-color: #edcc62; color: #776e65; }
+            .color-512 { background-color: #edc950; color: #776e65; }
+            .color-1024 { background-color: #edc53f; color: #776e65; }
+            .color-2048 { background-color: #edc22e; color: #776e65; }
+        </style>
+    </head>
+    <body>
+        <table id="table"></table><!--4*4 테이블-->
+        <div id="score">0</div>
+        <script>
+            const $table = document.getElementById('table');
+            const $score = document.getElementById('score');
+            let data = []; // 테이블에 대한 데이터
+
+            // $table -> $fragment -> $tr -> $td
+            function startGame(){
+                const $fragment = document.createDocumentFragment();
+                [1, 2, 3, 4].forEach(function () { // 4 * 4
+                    const rowData = [];
+                    data.push(rowData); // 2차원 배열 생성
+                    const $tr = document.createElement('tr');
+                    [1, 2, 3, 4].forEach(() => {
+                        rowData.push(0);
+                        const $td = document.createElement('td');
+                        $tr.appendChild($td);
+                    });
+                    $fragment.appendChild($tr);
+                });
+                // $table에 $tr을 직접 넣으면 성능적인 문제 발생
+                // $tr을 넣을 때마다 화면에 그리다보니 느려질 수 밖에 없음
+                // $fragment는 화면에 그리지 않고, 메모리에만 저장된다.
+                // $fragment에 $tr을 추가함으로써, $tr을 메모리에 추가
+                $table.appendChild($fragment);
+                put2ToRandomCell();
+                draw();
+            }
+
+            function put2ToRandomCell(){ // 2가 랜덤한 곳에 생성
+                const emptyCells = []; // [[i1, j1], [i2, j2], [i3, j3]...]
+                data.forEach(function (rowData, i){ // i : 몇번째 줄
+                    rowData.forEach(function (cellData, j) { // j : 몇번째 칸
+                        if(!cellData) { // 빈칸이면
+                            emptyCells.push([i,j]);
+                        }
+                    });
+                });
+                // randomCell은 [i, j] 모양
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                data[randomCell[0]][randomCell[1]] = 2;
+            }
+
+            function draw(){
+                data.forEach((rowData, i) => {
+                    rowData.forEach((cellData, j) => {
+                        const $target = $table.children[i].children[j];
+                        if(cellData > 0){
+                            $target.textContent = cellData;
+                            $target.classList = 'color-' + cellData;
+                        } else {
+                            $target.textContent = '';
+                            $target.className = '';
+                        }
+                    });
+                });
+            }
+
+            startGame();
+        </script>
+    </body>
+</html>
