@@ -23,19 +23,31 @@
         </style>
     </head>
     <body>
-        <table id="table"></table><!--4*4 테이블-->
-        <div id="score">0</div>
+        <table id="table"></table>
+        <div>
+            <span id="score">0</span>
+            <button id="back">되돌리기</button>
+        </div>
         <script>
             const $table = document.getElementById('table');
             const $score = document.getElementById('score');
-            let data = []; // 테이블에 대한 데이터
+            const $back = document.getElementById('back');
+            let data = [];
+            const history = [];
 
-            // $table -> $fragment -> $tr -> $td
+            $back.addEventListener('click', () => {
+                const prevData = history.pop();
+                if (!prevData) return; // 되돌릴게 없으면 종료
+                $score.textContent = prevData.score;
+                data = prevData.table;
+                draw();
+            });
+
             function startGame(){
                 const $fragment = document.createDocumentFragment();
-                [1, 2, 3, 4].forEach(function () { // 4 * 4
+                [1, 2, 3, 4].forEach(function () {
                     const rowData = [];
-                    data.push(rowData); // 2차원 배열 생성
+                    data.push(rowData);
                     const $tr = document.createElement('tr');
                     [1, 2, 3, 4].forEach(() => {
                         rowData.push(0);
@@ -44,25 +56,20 @@
                     });
                     $fragment.appendChild($tr);
                 });
-                // $table에 $tr을 직접 넣으면 성능적인 문제 발생
-                // $tr을 넣을 때마다 화면에 그리다보니 느려질 수 밖에 없음
-                // $fragment는 화면에 그리지 않고, 메모리에만 저장된다.
-                // $fragment에 $tr을 추가함으로써, $tr을 메모리에 추가
                 $table.appendChild($fragment);
                 put2ToRandomCell();
                 draw();
             }
 
-            function put2ToRandomCell(){ // 2가 랜덤한 곳에 생성
-                const emptyCells = []; // [[i1, j1], [i2, j2], [i3, j3]...]
-                data.forEach(function (rowData, i){ // i : 몇번째 줄
-                    rowData.forEach(function (cellData, j) { // j : 몇번째 칸
-                        if(!cellData) { // 빈칸이면
+            function put2ToRandomCell(){
+                const emptyCells = [];
+                data.forEach(function (rowData, i){
+                    rowData.forEach(function (cellData, j) {
+                        if(!cellData) {
                             emptyCells.push([i,j]);
                         }
                     });
                 });
-                // randomCell은 [i, j] 모양
                 const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
                 data[randomCell[0]][randomCell[1]] = 2;
             }
@@ -84,33 +91,26 @@
 
             startGame();
 
-            /*
-            data = [ // 더미 데이터
-                [32, 2, 4, 2],
-                [64, 4, 8, 4],
-                [2, 1024, 1024, 32],
-                [32, 16, 64, 4],
-            ]
-            draw();
-            */
-            // 보통 window에 추가한다 -> 넓은 범위에 마우스나 키보드 이벤트를 추가
             function moveCells(direction){
+                history.push({ // 옮길때마다 history에 저장
+                    table: JSON.parse(JSON.stringify(data)), // 깊은 복사
+                    // tabe: data 로 저장하면, 참조관계 때문에 문제 발생
+                    score: $score.textContent,
+                });
                 switch(direction){
-                    case 'left': { // 변수를 선언할 때는 중괄호 작성
-                        // 중괄호 작성하지 않으면 다른 case문에서도 const 변수가 겹쳐서 에러 발생
-                        // 중괄호를 작성하면 블록 스코프에 의해, 중괄호 바깥에서는 영향X
+                    case 'left': { 
                         const newData = [[], [], [], []];
                         data.forEach((rowData, i) => {
                             rowData.forEach((cellData, j) => {
-                                if(cellData) { // 빈칸 제외하고
-                                    const currentRow = newData[i]; // 지금 줄
+                                if(cellData) {
+                                    const currentRow = newData[i];
                                     const prevData = currentRow[currentRow.length - 1];
-                                    if(prevData === cellData){ // 이전 값이 지금 값과 같으면
+                                    if(prevData === cellData){
                                         const score = parseInt($score.textContent);
                                         $score.textContent = score + currentRow[currentRow.length - 1] * 2;
                                         currentRow[currentRow.length - 1] *= -2;
                                     } else{
-                                        newData[i].push(cellData); // 왼쪽부터 넣어줌
+                                        newData[i].push(cellData);
                                     }
                                 }
                             });
@@ -118,7 +118,7 @@
                         console.log(newData);
                         [1, 2, 3, 4].forEach((rowData, i) => {
                             [1, 2, 3, 4].forEach((cellData, j) => {
-                                data[i][j] = Math.abs(newData[i][j]) || 0; // 원본데이터 수정
+                                data[i][j] = Math.abs(newData[i][j]) || 0;
                             });
                         });
                         break;
@@ -200,20 +200,19 @@
                     }
                 }
 
-                // flat : 2차원 배열을 1차원 배열로 바꿈
-                if(data.flat().includes(2048)){ // 승리
+                if(data.flat().includes(2048)){
                     draw();
                     setTimeout(() => {
                         alert('축하합니다. 2048을 만들었습니다.');
                     }, 50);
-                } else if(!data.flat().includes(0)){ // 빈칸이 없으면 패배
+                } else if(!data.flat().includes(0)){
                     alert(`패배했습니다... 흑흑! ${$score.textContent}점`);
                 } else {
                     put2ToRandomCell();
                     draw();
                 }
             }
-            window.addEventListener('keyup', (event) => { // 키보드를 뗀 순간
+            window.addEventListener('keyup', (event) => {
                 if(event.key === 'ArrowUp'){
                     moveCells('up');
                 } else if(event.key === 'ArrowDown'){
@@ -227,14 +226,12 @@
 
             let startCoord;
             window.addEventListener('mousedown', (event) => {
-                startCoord = [event.clientX, event.clientY]; // 마우스 처음 누른 좌표
+                startCoord = [event.clientX, event.clientY];
             });
             window.addEventListener('mouseup', (event) => {
                 const endCoord = [event.clientX, event.clientY];
                 const diffX = endCoord[0] - startCoord[0];
                 const diffY = endCoord[1] - startCoord[1];
-                // Math.abs() : 절댓값
-                // Math.abs(diffX) > Math.abs(diffY) : 세로로 움직이는 것보다 가로로 움직이는 것이 커야함
                 if(diffX < 0 && Math.abs(diffX) > Math.abs(diffY)){
                     moveCells('left');
                 } else if(diffX > 0 && Math.abs(diffX) > Math.abs(diffY)){
